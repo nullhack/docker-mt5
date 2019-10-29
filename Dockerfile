@@ -33,10 +33,11 @@ RUN \
 nohup bash -c "Xvfb :1 -screen 0 1024x768x16 &" &&\
 sleep 10 &&\
 wine /headless/python-3.7.4.exe /quiet InstallAllUsers=0 PrependPath=1 Include_test=0 &&\
-wine pip install MetaTrader5 pandas &&\
+wine pip install MetaTrader5 pandas fastapi uvicorn &&\
 bash /headless/install_mt5.sh
 
 COPY ./entrypoint.sh /headless/entrypoint.sh
-COPY ./get_feed.py /headless/get_feed.py
+COPY ./pymt5.py /headless/pymt5.py
+COPY ./main.py /headless/main.py
 
 ENTRYPOINT ["bash", "/headless/entrypoint.sh"]

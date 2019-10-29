@@ -4,6 +4,8 @@ sleep 10
 
 xdotool key Return
 
+echo 'initializing mt5 install'
+
 export COMMON='/headless/.wine/drive_c/Program Files/MetaTrader 5/Config/common.ini'
 while :
 do
@@ -16,6 +18,6 @@ done
 
 echo 'waiting for mt5 to finish install'
 
-sleep 600
+sleep 300
 
 echo 'done'
