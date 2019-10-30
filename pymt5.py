@@ -31,29 +31,54 @@ dict_timeframe = {
     'MON1':MT5_TIMEFRAME_MON1,
 }
 
-def get_feed(symbol, start_date=pandas.to_datetime('now').date(), end_date=pandas.to_datetime('now'), candle_type='M1'):
+def get_ohlc(symbol, start_dtm=pandas.to_datetime('now').date(), end_dtm=pandas.to_datetime('now'), candle_type='M1'):
     try:
-        start_date = pandas.to_datetime(start_date, unit='s')
+        start_dtm = pandas.to_datetime(start_dtm, unit='s')
     except:
-        start_date = pandas.to_datetime(start_date)
+        start_dtm = pandas.to_datetime(start_dtm)
 
     try:
-        end_date = pandas.to_datetime(end_date, unit='s')
+        end_dtm = pandas.to_datetime(end_dtm, unit='s')
     except:
-        end_date = pandas.to_datetime(end_date)
+        end_dtm = pandas.to_datetime(end_dtm)
 
     try:
         '''Fetch data from MT5 and put on a dataframe'''
-        rate = MT5CopyRatesRange(symbol, dict_timeframe[candle_type], start_date, end_date)
+        rate = MT5CopyRatesRange(symbol, dict_timeframe[candle_type], start_dtm, end_dtm)
         feed = pandas.DataFrame(list(rate), columns=['time','open','low','high','close','tick_volume','spread','real_volume'])
-        feed['symbols'] = symbol
+        feed['symbol'] = symbol
         feed_output = io.StringIO()
         feed.to_csv(feed_output, index=False)
         return feed_output.getvalue()
     except Exception as err:
         print('>>> ERROR:', err, symbol)
 
-    return None
+    return pandas.DataFrame([], columns=['time','open','low','high','close','tick_volume','spread','real_volume'])
+
+
+def get_tick(symbol, start_dtm=pandas.to_datetime('now')-pandas.to_timedelta('5 minutes'), end_dtm=pandas.to_datetime('now')):
+    try:
+        start_dtm = pandas.to_datetime(start_dtm, unit='s')
+    except:
+        start_dtm = pandas.to_datetime(start_dtm)
+
+    try:
+        end_dtm = pandas.to_datetime(end_dtm, unit='s')
+    except:
+        end_dtm = pandas.to_datetime(end_dtm)
+
+    try:
+        '''Fetch data from MT5 and put on a dataframe'''
+        rate = MT5CopyTicksRange(symbol, start_dtm, end_dtm, MT5_COPY_TICKS_ALL)
+        feed = pandas.DataFrame(list(rate), columns=['time','bid','ask','last','volume','flags'])
+        feed['symbol'] = symbol
+        feed_output = io.StringIO()
+        feed.to_csv(feed_output, index=False)
+        return feed_output.getvalue()
+    except Exception as err:
+        print('>>> ERROR:', err, symbol)
+
+    return pandas.DataFrame([], columns=['time','bid','ask','last','volume','flags'])
 
 if __name__=='__main__':
     import argparse
@@ -61,22 +86,22 @@ if __name__=='__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument(
         'symbol',
-        help="symbol string as defined on mt5 terminal, default='Volatility 75 Index'", default='Volatility 75 Index'
+        help="symbol string as defined on mt5 terminal, default='EURUSD'", default='EURUSD'
     )
     parser.add_argument(
         '-s',
-        '--start_date',
+        '--start_dtm',
         action='store',
-        dest='start_date',
-        help="start date (either unix epoch or string), default='now' (date part)",
+        dest='start_dtm',
+        help="start dtm (either unix epoch or string), default='now' (date part)",
         default=pandas.to_datetime('now').date()
     )
     parser.add_argument(
         '-e',
-        '--end_date',
+        '--end_dtm',
         action='store',
-        dest='end_date',
-        help="end date (either unix epoch or string), default='now'",
+        dest='end_dtm',
+        help="end dtm (either unix epoch or string), default='now'",
         default=pandas.to_datetime('now')
     )
     parser.add_argument(
@@ -90,4 +115,4 @@ if __name__=='__main__':
     )
     args = parser.parse_args()
 
-    print(get_feed(args.symbol, args.start_date, args.end_date, args.candle_type))
+    print(get_feed(args.symbol, args.start_dtm, args.end_dtm, args.candle_type))

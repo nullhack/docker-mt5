@@ -30,14 +30,14 @@ apt install -y xvfb
 ENV DISPLAY=:1
 COPY ./install_mt5.sh /headless/install_mt5.sh
 RUN \
-nohup bash -c "Xvfb :1 -screen 0 1024x768x16 &" &&\
+nohup bash -c "Xvfb :1 -screen 0 800x600x16 &" &&\
 sleep 10 &&\
 wine /headless/python-3.7.4.exe /quiet InstallAllUsers=0 PrependPath=1 Include_test=0 &&\
-wine pip install MetaTrader5 pandas fastapi uvicorn &&\
+wine pip install MetaTrader5 pandas fastapi uvicorn email-validator &&\
 bash /headless/install_mt5.sh
 
-COPY ./entrypoint.sh /headless/entrypoint.sh
 COPY ./pymt5.py /headless/pymt5.py
 COPY ./main.py /headless/main.py
+COPY ./entrypoint.sh /headless/entrypoint.sh
 
 ENTRYPOINT ["bash", "/headless/entrypoint.sh"]
