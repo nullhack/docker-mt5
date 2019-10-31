@@ -4,7 +4,7 @@ from starlette.responses import PlainTextResponse
 from datetime import datetime
 from pymt5 import *
 
-class Candle(str, Enum):
+class CandleType(str, Enum):
     M1='M1'
     M2='M2'
     M3='M3'
@@ -27,33 +27,38 @@ class Candle(str, Enum):
     W1='W1'
     MON1='MON1'
 
+class TickType(str, Enum):
+    ALL='ALL'
+    INFO='INFO'
+    TRADE='TRADE'
+
 app = FastAPI(
     title="MT5 feed API",
     description="This API provides REST API for MetaTrader5 API (Python based API to retrieve feed data from MT5 client platform)",
-    version="1.0.0",
-    )
+    version="1.0.0")
 
 @app.get("/health")
 def health():
     feed = get_ohlc('EURUSD', candle_type='D1')
     return {'healthy': True if len(feed) else False}
 
-@app.get("/tick", response_class=PlainTextResponse)
-def api_get_tick(start_dtm: str = str(datetime.now()-pandas.to_timedelta('5 minutes')), end_dtm: str = str(datetime.now()), symbol: str = 'EURUSD'):
-    feed = get_tick(symbol, start_dtm=start_dtm, end_dtm=end_dtm)
+@app.get("/tick/{tick_type}", response_class=PlainTextResponse)
+def api_get_tick(tick_type: TickType = 'ALL', start_dtm: str = None, end_dtm: str = None, symbol: str = 'EURUSD'):
+    feed = get_tick(symbol, start_dtm=start_dtm, end_dtm=end_dtm, tick_type=tick_type)
     return feed
 
-@app.get("/tick/{start_dtm}/{end_dtm}", response_class=PlainTextResponse)
-def api_get_tick_epoch(start_dtm: int = 1572344136, end_dtm: int = 1572344736, symbol: str = 'EURUSD'):
+@app.get("/tick/{tick_type}/{start_dtm}/{end_dtm}", response_class=PlainTextResponse)
+def api_get_tick_epoch(tick_type: TickType = 'ALL', start_dtm: int = None, end_dtm: int = None, symbol: str = 'EURUSD'):
     feed = get_tick(symbol, start_dtm=start_dtm, end_dtm=end_dtm)
     return feed
 
 @app.get("/ohlc/{candle}", response_class=PlainTextResponse)
-def api_get_ohlc(candle: Candle = 'M5', start_dtm: str = str(datetime.now().date()), end_dtm: str = str(datetime.now()), symbol: str = 'EURUSD'):
+def api_get_ohlc(candle: CandleType = 'H1', start_dtm: str = None, end_dtm: str = None, symbol: str = 'EURUSD'):
     feed = get_ohlc(symbol, start_dtm=start_dtm, end_dtm=end_dtm, candle_type=candle)
     return feed
 
 @app.get("/ohlc/{candle}/{start_dtm}/{end_dtm}", response_class=PlainTextResponse)
-def api_get_ohlc_epoch(candle: Candle = 'M5', start_dtm: int = 1572258336, end_dtm: int = 1572344736, symbol: str = 'EURUSD'):
+def api_get_ohlc_epoch(candle: CandleType = 'H1', start_dtm: int = None, end_dtm: int = None, symbol: str = 'EURUSD'):
     feed = get_ohlc(symbol, start_dtm=start_dtm, end_dtm=end_dtm, candle_type=candle)
     return feed
+

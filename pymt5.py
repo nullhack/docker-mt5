@@ -31,7 +31,16 @@ dict_timeframe = {
     'MON1':MT5_TIMEFRAME_MON1,
 }
 
-def get_ohlc(symbol, start_dtm=pandas.to_datetime('now').date(), end_dtm=pandas.to_datetime('now'), candle_type='M1'):
+dict_ticks = {
+    'ALL':MT5_COPY_TICKS_ALL,
+    'INFO':MT5_COPY_TICKS_INFO,
+    'TRADE':MT5_COPY_TICKS_TRADE
+}
+
+def get_ohlc(symbol, start_dtm=None, end_dtm=None, candle_type='H1'):
+    if not end_dtm: end_dtm = pandas.to_datetime('now')
+    if not start_dtm: start_dtm = pandas.to_datetime(end_dtm) - pandas.to_timedelta('1 day')
+
     try:
         start_dtm = pandas.to_datetime(start_dtm, unit='s')
     except:
@@ -56,7 +65,10 @@ def get_ohlc(symbol, start_dtm=pandas.to_datetime('now').date(), end_dtm=pandas.
     return pandas.DataFrame([], columns=['time','open','low','high','close','tick_volume','spread','real_volume'])
 
 
-def get_tick(symbol, start_dtm=pandas.to_datetime('now')-pandas.to_timedelta('5 minutes'), end_dtm=pandas.to_datetime('now')):
+def get_tick(symbol, start_dtm=None, end_dtm=None, tick_type='ALL'):
+    if not end_dtm: end_dtm = pandas.to_datetime('now')
+    if not start_dtm: start_dtm = pandas.to_datetime(end_dtm) - pandas.to_timedelta('1 minute')
+
     try:
         start_dtm = pandas.to_datetime(start_dtm, unit='s')
     except:
@@ -69,7 +81,7 @@ def get_tick(symbol, start_dtm=pandas.to_datetime('now')-pandas.to_timedelta('5 
 
     try:
         '''Fetch data from MT5 and put on a dataframe'''
-        rate = MT5CopyTicksRange(symbol, start_dtm, end_dtm, MT5_COPY_TICKS_ALL)
+        rate = MT5CopyTicksRange(symbol, start_dtm, end_dtm, dict_ticks[tick_type])
         feed = pandas.DataFrame(list(rate), columns=['time','bid','ask','last','volume','flags'])
         feed['symbol'] = symbol
         feed_output = io.StringIO()
@@ -86,15 +98,15 @@ if __name__=='__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument(
         'symbol',
-        help="symbol string as defined on mt5 terminal, default='EURUSD'", default='EURUSD'
+        help="symbol string as defined on mt5 terminal, default='Volatility 75 Index'", default='Volatility 75 Index'
     )
     parser.add_argument(
         '-s',
         '--start_dtm',
         action='store',
         dest='start_dtm',
-        help="start dtm (either unix epoch or string), default='now' (date part)",
-        default=pandas.to_datetime('now').date()
+        help="start dtm (either unix epoch or string), default='5 mintues ago'",
+        default=pandas.to_datetime('now') - pandas.to_timedelta('5 minutes')
     )
     parser.add_argument(
         '-e',
@@ -104,15 +116,24 @@ if __name__=='__main__':
         help="end dtm (either unix epoch or string), default='now'",
         default=pandas.to_datetime('now')
     )
-    parser.add_argument(
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument(
         '-c',
         '--candle_type',
         action='store',
         dest='candle_type',
         choices=list(dict_timeframe.keys()),
-        help="timeframe for candles, choose from the list of options available, default='D1'",
-        default='D1'
+        help="timeframe for candles, choose from the list of options available",
+    )
+    group.add_argument(
+        '-t',
+        '--tick_type',
+        action='store',
+        dest='tick_type',
+        choices=list(dict_ticks.keys()),
+        help="ticks that will be copied",
     )
     args = parser.parse_args()
 
-    print(get_feed(args.symbol, args.start_dtm, args.end_dtm, args.candle_type))
+    if args.candle_type: print(get_feed(args.symbol, args.start_dtm, args.end_dtm, args.candle_type))
+    elif args.tick_type: print(get_tick(args.symbol, args.start_dtm, args.end_dtm, args.tick_type))
