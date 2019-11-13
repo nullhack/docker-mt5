@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from enum import Enum
-from starlette.responses import PlainTextResponse
+from starlette.responses import PlainTextResponse, RedirectResponse
 from datetime import datetime
 from pymt5 import *
 
@@ -36,6 +36,11 @@ app = FastAPI(
     title="MT5 feed API",
     description="This API provides REST API for MetaTrader5 API (Python based API to retrieve feed data from MT5 client platform)",
     version="1.0.0")
+
+@app.get("/")
+async def redirect():
+    response = RedirectResponse(url='/docs')
+    return response
 
 @app.get("/health")
 def health():
