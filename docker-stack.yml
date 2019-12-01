@@ -1,0 +1,33 @@
+version: '3.7'
+services:
+  mt5:
+    deploy:
+      labels:
+        - traefik.docker.network=public_network
+        - traefik.enable=true
+        - traefik.frontend.rule=Host:${MT5__TRAEFIK__URL:?MT5__TRAEFIK__URL}
+        - traefik.port=8080
+        - traefik.tags=public
+        # Traefik service that listens to HTTP
+        - traefik.redirectorservice.frontend.entryPoints=http
+        - traefik.redirectorservice.frontend.redirect.entryPoint=https
+        # Traefik service that listens to HTTPS
+        - traefik.frontend.auth.basic.users=${MT5__TRAEFIK__AUTH:?MT5__TRAEFIK__AUTH}
+        - traefik.webservice.frontend.entryPoints=https
+    environment:
+      - MT5_LOGIN=${MT5__MAIN__LOGIN:?MT5__MAIN__LOGIN}
+      - MT5_PASSWORD=${MT5__MAIN__PASSWORD:?MT5__MAIN__PASSWORD}
+      - MT5_SERVER=${MT5__MAIN__SERVER:?MT5__MAIN__SERVER}
+    image: mt5:local
+    networks:
+      - public_network
+      - mt5_public_network
+    ports:
+      - 8060:8080
+      - 15901:5901
+
+networks:
+  public_network:
+    external: true
+  mt5_public_network:
+    external: true
