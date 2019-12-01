@@ -9,6 +9,7 @@ ENV WINEDEBUG=-all
 RUN \
 apt-get update --fix-missing &&\
 apt-get install -y wget &&\
+apt-get install -y curl &&\
 wget -nc https://dl.winehq.org/wine-builds/winehq.key &&\
 apt-get install -y gnupg2 &&\
 apt-key add winehq.key &&\

@@ -35,10 +35,10 @@ class TickType(str, Enum):
 app = FastAPI(
     title="MT5 feed API",
     description="This API provides REST API for MetaTrader5 API (Python based API to retrieve feed data from MT5 client platform)",
-    version="1.0.0")
+    version="1.0.1")
 
 @app.get("/")
-async def redirect():
+async def redirect_docs():
     response = RedirectResponse(url='/docs')
     return response
 

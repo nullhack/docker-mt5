@@ -54,7 +54,7 @@ def get_ohlc(symbol, start_dtm=None, end_dtm=None, candle_type='H1'):
     try:
         '''Fetch data from MT5 and put on a dataframe'''
         rate = MT5CopyRatesRange(symbol, dict_timeframe[candle_type], start_dtm, end_dtm)
-        feed = pandas.DataFrame(list(rate), columns=['time','open','low','high','close','tick_volume','spread','real_volume'])
+        feed = pandas.DataFrame(list(rate), columns=['time','open','high','low','close','tick_volume','spread','real_volume'])
         feed['symbol'] = symbol
         feed_output = io.StringIO()
         feed.to_csv(feed_output, index=False)
@@ -62,7 +62,7 @@ def get_ohlc(symbol, start_dtm=None, end_dtm=None, candle_type='H1'):
     except Exception as err:
         print('>>> ERROR:', err, symbol)
 
-    return pandas.DataFrame([], columns=['time','open','low','high','close','tick_volume','spread','real_volume'])
+    return pandas.DataFrame([], columns=['time','open','high','low','close','tick_volume','spread','real_volume'])
 
 
 def get_tick(symbol, start_dtm=None, end_dtm=None, tick_type='ALL'):
