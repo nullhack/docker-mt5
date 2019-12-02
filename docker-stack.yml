@@ -18,6 +18,11 @@ services:
       - MT5_LOGIN=${MT5__MAIN__LOGIN:?MT5__MAIN__LOGIN}
       - MT5_PASSWORD=${MT5__MAIN__PASSWORD:?MT5__MAIN__PASSWORD}
       - MT5_SERVER=${MT5__MAIN__SERVER:?MT5__MAIN__SERVER}
+    healthcheck:
+      interval: 30s
+      retries: 3
+      test: curl -sfk http://0.0.0.0:8080/health | grep true
+      timeout: 30s
     image: mt5:local
     networks:
       - public_network
